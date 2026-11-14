@@ -379,6 +379,9 @@ namespace MissionPlanner
             // setup settings provider
             MissionPlanner.Comms.CommsBase.Settings += CommsBase_Settings;
             MissionPlanner.Comms.CommsBase.InputBoxShow += CommsBaseOnInputBoxShow;
+#if !LIB
+            UdpSerial.SelectNetworkInterface += NetworkInterfaceDialog.ShowPicker;
+#endif
             MissionPlanner.Comms.CommsBase.ApplyTheme += MissionPlanner.Utilities.ThemeManager.ApplyThemeTo;
             MissionPlanner.Comms.SerialPort.GetDeviceName += SerialPort_GetDeviceName;
 

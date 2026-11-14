@@ -34,6 +34,30 @@ namespace MissionPlanner.Comms
         /// </summary>
         public IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
+        /// <summary>The host supplies the UI; the communications library has no WinForms dependency.</summary>
+        public delegate inputboxreturn NetworkInterfacePicker(ref IPAddress address);
+
+        public static event NetworkInterfacePicker SelectNetworkInterface;
+
+        /// <summary>
+        /// Ask the user to select a local NIC address, initially selecting the supplied address.
+        /// Returns false without changing the address if cancelled or no host UI is available.
+        /// This only selects an address; it does not bind or reopen the UDP socket.
+        /// </summary>
+        public bool TrySelectLocalAddress(ref IPAddress address)
+        {
+            var picker = SelectNetworkInterface;
+            if (picker == null)
+                return false;
+
+            var selected = address;
+            if (picker(ref selected) != inputboxreturn.OK || selected == null)
+                return false;
+
+            address = selected;
+            return true;
+        }
+
         public string ConfigRef { get; set; } = "";
 
         public UdpSerial()
@@ -99,13 +123,11 @@ namespace MissionPlanner.Comms
 
         public void Open()
         {
-            if (client.Client.Connected || IsOpen)
+            if (client?.Client?.Connected == true || IsOpen)
             {
                 log.Info("UDPSerial socket already open");
                 return;
             }
-
-            client.Close();
 
             var dest = Port;
 
@@ -113,9 +135,17 @@ namespace MissionPlanner.Comms
 
             if (inputboxreturn.Cancel == OnInputBoxShow("Listern Port",
                     "Enter Local port (ensure remote end is already sending)", ref dest)) return;
-            Port = dest;
+            var localAddress = IPAddress.Any;
+            // Hosts without a picker (including LIB) retain the all-interfaces listener.
+            if (SelectNetworkInterface != null)
+            {
+                IPAddress.TryParse(OnSettings("UDP_local_ip" + ConfigRef, ""), out localAddress);
+                if (!TrySelectLocalAddress(ref localAddress))
+                    return;
+            }
 
-            OnSettings("UDP_port" + ConfigRef, Port, true);
+            var localEndPoint = new IPEndPoint(localAddress, int.Parse(dest));
+            Port = dest;
 
             //######################################
 
@@ -127,7 +157,14 @@ namespace MissionPlanner.Comms
             {
             }
 
-            client = new UdpClient(int.Parse(Port));
+            client = new UdpClient(localEndPoint);
+            EndPointList.Clear();
+            rbuffer.SetLength(0);
+            rbuffer.Position = 0;
+            OnSettings("UDP_port" + ConfigRef, Port, true);
+            if (SelectNetworkInterface != null)
+                OnSettings("UDP_local_ip" + ConfigRef, localAddress.ToString(), true);
+            log.InfoFormat("UDPSerial listening on {0}", localEndPoint);
 
             while (true)
             {
@@ -156,7 +193,8 @@ namespace MissionPlanner.Comms
             try
             {
                 // reset any previous connection
-                RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                RemoteIpEndPoint = new IPEndPoint(
+                    client.Client.AddressFamily == AddressFamily.InterNetworkV6 ? IPAddress.IPv6Any : IPAddress.Any, 0);
 
                 client.Receive(ref RemoteIpEndPoint);
                 log.InfoFormat("UDPSerial connecting to {0} : {1}", RemoteIpEndPoint.Address, RemoteIpEndPoint.Port);
@@ -191,7 +229,8 @@ namespace MissionPlanner.Comms
                     // read more
                     while (client.Available > 0 && (rbuffer.Length - rbuffer.Position) < length)
                     {
-                        var currentRemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                        var currentRemoteIpEndPoint = new IPEndPoint(
+                            client.Client.AddressFamily == AddressFamily.InterNetworkV6 ? IPAddress.IPv6Any : IPAddress.Any, 0);
                         // assumes the udp packets are mavlink aligned, if we are receiving from more than one source
                         var b = client.Receive(ref currentRemoteIpEndPoint);
                         rbuffer.Seek(0, SeekOrigin.End);

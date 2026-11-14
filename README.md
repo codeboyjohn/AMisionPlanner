@@ -42,7 +42,7 @@ cd TitanPlanner
 git submodule update --init
 ```
 
-Open `MissionPlanner.sln` in Visual Studio 2022 and Build.
+Open `MissionPlanner.sln` in Visual Studio 2022 and Build. The Release executable is `bin\Release\net461\MissionPlanner.exe`; its title bar displays **Planner**.
 
 ### Linux (Mono)
 

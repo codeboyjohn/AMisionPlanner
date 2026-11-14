@@ -268,7 +268,7 @@ namespace MissionPlanner
                 return;
             }
 
-            name = "TitanPlanner";
+            name = "Planner";
 
             try
             {

@@ -1,4 +1,4 @@
-# Mission Planner - Titan Dynamics Edition
+# Planner
 
 <p align="center">
    <img width="300" height="300" alt="icon" src=".github/icon.png"/><br><br>

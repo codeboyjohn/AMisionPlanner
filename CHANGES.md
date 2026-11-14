@@ -6,6 +6,9 @@ What this fork adds on top of upstream [ArduPilot/MissionPlanner](https://github
 
 # Branding & Theming
 
+## Application Name
+The application is displayed as **Planner** in the title bar, splash screen, and executable product metadata.
+
 ## Titan Dynamics System Theme
 A new bundled theme (`titandynamics.mpsystheme`) is set as the default for new installs. Theming also covers controls upstream leaves unthemed — `ListBox`, `PropertyGrid`, `MessagesList`, status tab, menu-bar icons, the Splash form, and toast notifications.
 

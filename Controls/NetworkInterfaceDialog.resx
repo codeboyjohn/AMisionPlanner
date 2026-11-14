@@ -14,5 +14,6 @@
   <data name="Prompt" xml:space="preserve"><value>Select the local IP address to use. Each address has its own row.</value></data>
   <data name="DefaultMissing" xml:space="preserve"><value>The requested IP address is not available. Select a local IP address.</value></data>
   <data name="NoAddresses" xml:space="preserve"><value>No local IP addresses were found.</value></data>
+  <data name="NoMatchingAddresses" xml:space="preserve"><value>No local IP addresses match the address family and first byte of the supplied IP address.</value></data>
   <data name="EnumerationFailed" xml:space="preserve"><value>Some network adapter information could not be read. Available addresses are shown.</value></data>
 </root>

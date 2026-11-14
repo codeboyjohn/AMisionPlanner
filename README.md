@@ -18,7 +18,7 @@
 
 This fork implements every feature we've always yearned for with considerable UI/UX upgrades, a reworked HUD, a real-time 3D map with vehicle rendering (and ADSB), an overhauled parameter editor and tab layout, a Betaflight-style motor setup, USB auto-connect, offline map packs for air-gapped planning, and dozens of large improvements throughout the app.
 
-UDP connections let you select a local network adapter IP address and remember the selection for next time.
+UDP connections let you select a local network adapter IP address and remember the selection for next time. A supplied default IP filters the picker to addresses of the same family with the same first byte (for example, 192.x.x.x).
 
 **See [CHANGES.md](CHANGES.md) for the full list of features and fixes added in this fork.**
 

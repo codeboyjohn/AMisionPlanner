@@ -83,6 +83,7 @@ namespace MissionPlanner.Controls
 
         private void Populate(IPAddress defaultAddress)
         {
+            var defaultBytes = defaultAddress?.GetAddressBytes();
             bool incomplete = false;
             try
             {
@@ -93,6 +94,12 @@ namespace MissionPlanner.Controls
                         foreach (var unicast in adapter.GetIPProperties().UnicastAddresses)
                         {
                             var address = unicast.Address;
+                            // Compare address bytes, not text prefixes (192 must not match 19).
+                            if (defaultAddress != null &&
+                                (address.AddressFamily != defaultAddress.AddressFamily ||
+                                 address.GetAddressBytes()[0] != defaultBytes[0]))
+                                continue;
+
                             var row = new ListViewItem(new[]
                             {
                                 adapter.Name, address.ToString(), adapter.OperationalStatus.ToString(),
@@ -113,7 +120,7 @@ namespace MissionPlanner.Controls
             catch (PlatformNotSupportedException) { incomplete = true; }
 
             status.Text = resources.GetString(incomplete ? "EnumerationFailed" :
-                addresses.Items.Count == 0 ? "NoAddresses" :
+                addresses.Items.Count == 0 ? (defaultAddress == null ? "NoAddresses" : "NoMatchingAddresses") :
                 defaultAddress != null && addresses.SelectedItems.Count == 0 ? "DefaultMissing" : "Prompt");
             accept.Enabled = addresses.SelectedItems.Count == 1;
         }

@@ -162,7 +162,7 @@ Save and load named configuration profiles for the Mission Planner application i
 A dedicated USB auto-connect path with VID coverage for all common flight controllers (including Cube). Toast notification fires when a device auto-connects. Auto-connect is disabled while flashing firmware to avoid races.
 
 ## Network Interface Picker
-UDP connections offer a network adapter picker listing local IPv4 and IPv6 addresses with adapter names and status. The listener binds to the selected IP address and port, and remembers the address for the next connection.
+UDP connections offer a network adapter picker listing local IPv4 and IPv6 addresses with adapter names and status. When a default IP is supplied, only addresses of the same family with the same first byte are shown (for example, 192.1.2.3 shows only 192.x.x.x addresses). The listener binds to the selected IP address and port, and remembers the address for the next connection.
 
 ## ELRS
 ELRS airport support added.

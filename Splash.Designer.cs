@@ -43,7 +43,7 @@
             this.label1.ForeColor = System.Drawing.Color.OliveDrab;
             this.label1.Location = new System.Drawing.Point(22, 358);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(364, 17);
+            this.label1.Size = new System.Drawing.Size(423, 20);
             this.label1.TabIndex = 0;
             this.label1.Tag = "custom";
             this.label1.Text = "by Michael Oborne | Modified by Mohammad Adib";
@@ -71,6 +71,7 @@
             this.titanLogo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.titanLogo.TabIndex = 2;
             this.titanLogo.TabStop = false;
+            this.titanLogo.Click += new System.EventHandler(this.titanLogo_Click);
             // 
             // Splash
             // 

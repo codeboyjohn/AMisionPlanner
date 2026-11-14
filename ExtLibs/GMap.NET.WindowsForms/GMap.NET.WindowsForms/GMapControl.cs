@@ -2585,7 +2585,7 @@ namespace GMap.NET.WindowsForms
                 dlg.ValidateNames = true;
                 dlg.Title = "GMap.NET: Export map to db, if file exsist only new data will be added";
                 dlg.FileName = "DataExp";
-                dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 dlg.Filter = "GMap.NET DB files (*.gmdb)|*.gmdb";
                 dlg.FilterIndex = 1;
                 dlg.RestoreDirectory = true;
@@ -2624,7 +2624,7 @@ namespace GMap.NET.WindowsForms
                 dlg.ValidateNames = true;
                 dlg.Title = "GMap.NET: Import to db, only new data will be added";
                 dlg.FileName = "DataImport";
-                dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 dlg.Filter = "GMap.NET DB files (*.gmdb)|*.gmdb";
                 dlg.FilterIndex = 1;
                 dlg.RestoreDirectory = true;

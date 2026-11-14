@@ -608,7 +608,7 @@ namespace MissionPlanner.Utilities
         public static string CustomUserDataDirectory = "";
 
         /// <summary>
-        /// User specific data
+        /// User specific data`
         /// </summary>
         /// <returns></returns>
         public static string GetUserDataDirectory()
@@ -617,7 +617,7 @@ namespace MissionPlanner.Utilities
                 return CustomUserDataDirectory + Path.DirectorySeparatorChar + AppConfigName +
                        Path.DirectorySeparatorChar;
 
-            var oldApproachPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
+            var oldApproachPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) +
                 Path.DirectorySeparatorChar + AppConfigName + Path.DirectorySeparatorChar;
             var path = "";
             if (isUnix && !Directory.Exists(oldApproachPath)) // Do not use new AppData path if old path already exists
@@ -626,7 +626,7 @@ namespace MissionPlanner.Utilities
             }
             else
             {
-                path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             }
 
             path += Path.DirectorySeparatorChar + AppConfigName + Path.DirectorySeparatorChar;

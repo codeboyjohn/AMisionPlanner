@@ -792,7 +792,7 @@ namespace MissionPlanner.Controls
                 AddExtension = true,
                 OverwritePrompt = true,
                 FileName = SafeFileName(suggested),
-                InitialDirectory = Settings.Instance.GetString(LastDirSetting, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments))
+                InitialDirectory = Settings.Instance.GetString(LastDirSetting, Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData))
             })
             {
                 if (dlg.ShowDialog(this) != DialogResult.OK)
@@ -832,7 +832,7 @@ namespace MissionPlanner.Controls
                 Title = "Import offline map pack",
                 Filter = OfflineMapPack.FileFilter,
                 DefaultExt = OfflineMapPack.FileExtension,
-                InitialDirectory = Settings.Instance.GetString(LastDirSetting, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments))
+                InitialDirectory = Settings.Instance.GetString(LastDirSetting, Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData))
             })
             {
                 if (dlg.ShowDialog(this) != DialogResult.OK)

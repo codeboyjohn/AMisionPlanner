@@ -18,7 +18,7 @@ namespace MissionPlanner
                 ? File.ReadAllText("version.txt").Trim()
                 : Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-            TXT_version.Text = "Version: Titan " + strVersion;
+            TXT_version.Text = "Version: A " + strVersion;
 
             // Use theme color for bottom line instead of hardcoded green
             label1.ForeColor = ThemeManager.BannerColor2;
@@ -39,6 +39,11 @@ namespace MissionPlanner
             }
 
             base.OnBackgroundImageChanged(e);
+        }
+
+        private void titanLogo_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

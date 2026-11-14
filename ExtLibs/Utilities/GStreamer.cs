@@ -59,7 +59,7 @@ namespace MissionPlanner.Utilities
                         return BackendEnum.Windows;
                     if (Environment.OSVersion.Platform == PlatformID.Unix)
                     {
-                        var doc = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                        var doc = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                         if (doc.StartsWith("/data/user/"))
                             return BackendEnum.Android;
                         return BackendEnum.Linux;

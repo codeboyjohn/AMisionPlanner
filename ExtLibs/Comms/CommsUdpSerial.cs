@@ -64,8 +64,9 @@ namespace MissionPlanner.Comms
         {
             //System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en-US");
             //System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
-
-            Port = "14550";
+            Port = "51019";
+            Interface_IP = "192.168.168.10";
+            Mult_Addr = "224.1.0.44";
             ReadTimeout = 500;
         }
 
@@ -77,6 +78,8 @@ namespace MissionPlanner.Comms
         }
 
         public string Port { get; set; }
+        public string Mult_Addr { get; set; }
+        public string Interface_IP { get; set; }
 
         public int WriteBufferSize { get; set; }
         public int WriteTimeout { get; set; }
@@ -135,18 +138,32 @@ namespace MissionPlanner.Comms
 
             if (inputboxreturn.Cancel == OnInputBoxShow("Listern Port",
                     "Enter Local port (ensure remote end is already sending)", ref dest)) return;
-            var localAddress = IPAddress.Any;
+
+            var localAddress = Interface_IP;
+            
+            localAddress = OnSettings("Interface_IP" + ConfigRef, localAddress);
+
+            // Load the previously persisted IP address.
+            IPAddress local_ip = IPAddress.Parse(localAddress);
+            
             // Hosts without a picker (including LIB) retain the all-interfaces listener.
             if (SelectNetworkInterface != null)
             {
-                IPAddress.TryParse(OnSettings("UDP_local_ip" + ConfigRef, ""), out localAddress);
-                if (!TrySelectLocalAddress(ref localAddress))
+                if (!TrySelectLocalAddress(ref local_ip))
                     return;
             }
 
-            var localEndPoint = new IPEndPoint(localAddress, int.Parse(dest));
-            Port = dest;
+            var multicast_source = Mult_Addr;
+            multicast_source = OnSettings("Mult_Addr" + ConfigRef, multicast_source);
 
+            if (inputboxreturn.Cancel == OnInputBoxShow("Listen Multicast?",
+                    "Enter Multicast to Subscribe too", ref multicast_source)) return;
+
+            Mult_Addr = multicast_source;
+            
+            OnSettings("Interface_IP" + ConfigRef, Interface_IP, true);
+            OnSettings("UDP_port" + ConfigRef, Port, true);
+            OnSettings("Mult_Addr" + ConfigRef, Mult_Addr, true);
             //######################################
 
             try
@@ -156,15 +173,33 @@ namespace MissionPlanner.Comms
             catch
             {
             }
+            // client = new UdpClient(int.Parse(Port));
 
-            client = new UdpClient(localEndPoint);
+            client = new UdpClient(new IPEndPoint(IPAddress.Any, int.Parse(Port)));
+            IPAddress nicAddress = local_ip;
+            IPAddress groupAddress = IPAddress.Parse(multicast_source);
+            if (multicast_source != "0.0.0.0")
+            {
+                //                 client.JoinMulticastGroup(IPAddress.Parse(multicast_source), local_ip);
+                try
+                {
+                    client.JoinMulticastGroup(groupAddress, nicAddress);
+                }
+                catch (SocketException ex)
+                {
+                    client.Close();
+
+                    throw new InvalidOperationException(
+                        $"Could not join multicast group {groupAddress} " +
+                        $"on local interface {localAddress}. " +
+                        $"Socket error: {ex.SocketErrorCode}. {ex.Message}",
+                        ex);
+                }
+            }
+
             EndPointList.Clear();
             rbuffer.SetLength(0);
             rbuffer.Position = 0;
-            OnSettings("UDP_port" + ConfigRef, Port, true);
-            if (SelectNetworkInterface != null)
-                OnSettings("UDP_local_ip" + ConfigRef, localAddress.ToString(), true);
-            log.InfoFormat("UDPSerial listening on {0}", localEndPoint);
 
             while (true)
             {

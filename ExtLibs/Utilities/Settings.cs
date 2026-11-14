@@ -22,7 +22,7 @@ namespace MissionPlanner.Utilities
         /// <summary>
         /// Folder names this app's data may still be in, highest priority first. On first launch their settings
         /// and data are copied into the <see cref="AppConfigName"/> folders (see <see cref="DataFolderMigration"/>);
-        /// a file from an earlier name wins over the same file from a later one. Empty = nothing to migrate.
+        /// a file from an earlier name wins over the same file from a later one. Empty = no older product names to migrate.
         /// </summary>
         public static string[] PreviousAppConfigNames { get; set; } = { "Mission Planner" };
 
@@ -608,7 +608,7 @@ namespace MissionPlanner.Utilities
         public static string CustomUserDataDirectory = "";
 
         /// <summary>
-        /// User specific data`
+        /// User specific data
         /// </summary>
         /// <returns></returns>
         public static string GetUserDataDirectory()

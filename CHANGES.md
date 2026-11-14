@@ -9,6 +9,8 @@ What this fork adds on top of upstream [ArduPilot/MissionPlanner](https://github
 ## Titan Dynamics System Theme
 A new bundled theme (`titandynamics.mpsystheme`) is set as the default for new installs. Theming also covers controls upstream leaves unthemed — `ListBox`, `PropertyGrid`, `MessagesList`, status tab, menu-bar icons, the Splash form, and toast notifications.
 
+The A theme is also bundled and available in the theme selector.
+
 ## Dark Windows Title Bars
 Native Windows title bars now follow the application theme rather than always being light.
 
@@ -162,7 +164,7 @@ Save and load named configuration profiles for the Mission Planner application i
 A dedicated USB auto-connect path with VID coverage for all common flight controllers (including Cube). Toast notification fires when a device auto-connects. Auto-connect is disabled while flashing firmware to avoid races.
 
 ## Network Interface Picker
-UDP connections offer a network adapter picker listing local IPv4 and IPv6 addresses with adapter names and status. When a default IP is supplied, only addresses of the same family with the same first byte are shown (for example, 192.1.2.3 shows only 192.x.x.x addresses). The listener binds to the selected IP address and port, and remembers the address for the next connection.
+UDP connections offer a network adapter picker listing local IPv4 and IPv6 addresses with adapter names and status. When a default IP is supplied, only addresses of the same family with the same first byte are shown (for example, 192.1.2.3 shows only 192.x.x.x addresses). Ordinary UDP binds to the selected IP address and port; IPv4 multicast joins the supplied group on the selected adapter. Entering `0.0.0.0` disables multicast. The address, port and group are remembered after successful setup.
 
 ## ELRS
 ELRS airport support added.
@@ -335,7 +337,7 @@ The MSI installs **TitanPlanner** as a product of its own: `Program Files\TitanP
 Older TitanPlanner installers used the identity of stock ArduPilot Mission Planner. The TitanPlanner MSI removes such an install only when it is TitanPlanner, recognised by `TitanDynamics.mpsystheme` in `Program Files (x86)\Mission Planner`, so upgrading from an older TitanPlanner needs no manual uninstall while a stock Mission Planner install is left alone. An older TitanPlanner installed to a custom folder is not detected and stays installed alongside. Nothing removes TitanPlanner except its own uninstaller: stock Mission Planner's installer and the NextVision edition install alongside it.
 
 ## Its Own Data Folders
-Settings, logs, map tiles, offline maps, elevation data and caches live in `ProgramData\TitanPlanner` and `Documents\TitanPlanner` instead of the `Mission Planner` folders shared with stock Mission Planner. On first launch TitanPlanner copies everything over from the `Mission Planner` folders: settings and configuration profiles before startup continues, and the rest (which can be gigabytes of map tiles) on a low-priority background thread that resumes on the next launch if interrupted. Nothing is moved or deleted, files already in the new folders are never overwritten, and if the disk lacks space for the copy it says so and retries on a later launch.
+Settings, logs, map tiles, offline maps, elevation data and caches live in `ProgramData\TitanPlanner` and `%LOCALAPPDATA%\TitanPlanner` instead of the `Mission Planner` folders shared with stock Mission Planner. TitanPlanner imports existing user data from `Documents\TitanPlanner` and the previous `Mission Planner` folders: settings and configuration profiles before startup continues, and the rest (which can be gigabytes of map tiles) on a low-priority background thread that resumes on the next launch if interrupted. Nothing is moved or deleted, files already in the new folders are never overwritten, and if the disk lacks space for the copy it says so and retries on a later launch.
 
 ---
 

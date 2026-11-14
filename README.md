@@ -18,7 +18,9 @@
 
 This fork implements every feature we've always yearned for with considerable UI/UX upgrades, a reworked HUD, a real-time 3D map with vehicle rendering (and ADSB), an overhauled parameter editor and tab layout, a Betaflight-style motor setup, USB auto-connect, offline map packs for air-gapped planning, and dozens of large improvements throughout the app.
 
-UDP connections let you select a local network adapter IP address and remember the selection for next time. A supplied default IP filters the picker to addresses of the same family with the same first byte (for example, 192.x.x.x).
+UDP connections let you select a local network adapter IP address and remember the address and listen port for next time. IPv4 multicast reception joins the supplied group on that adapter; enter `0.0.0.0` to receive ordinary UDP on the selected address. A supplied default IP filters the picker to addresses of the same family with the same first byte (for example, 192.x.x.x).
+
+User settings and profiles live in `%LOCALAPPDATA%\TitanPlanner`, with existing files copied from the previous Documents folders without overwriting destination files. The A theme is included in the build output.
 
 **See [CHANGES.md](CHANGES.md) for the full list of features and fixes added in this fork.**
 

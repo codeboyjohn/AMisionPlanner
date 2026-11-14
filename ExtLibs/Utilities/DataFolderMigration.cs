@@ -24,7 +24,8 @@ namespace MissionPlanner.Utilities
     {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private const string MarkerName = ".migration-complete";
+        // A distinct marker ensures installs which already migrated names also migrate Documents.
+        private const string MarkerName = ".migration-complete-localappdata";
         private const string TempSuffix = ".migrating";
         private const long FreeSpaceMarginBytes = 512L * 1024 * 1024;
 
@@ -53,7 +54,8 @@ namespace MissionPlanner.Utilities
                         if (pair.IsUserFolder)
                         {
                             foreach (var file in Directory.GetFiles(from))
-                                CopyIfMissing(file, Path.Combine(pair.To, Path.GetFileName(file)));
+                                if (!IsMigrationMarker(file))
+                                    CopyIfMissing(file, Path.Combine(pair.To, Path.GetFileName(file)));
                         }
 
                         // tiny, and has to arrive before the map writes a new one
@@ -102,13 +104,13 @@ namespace MissionPlanner.Utilities
                 .Where(n => !string.IsNullOrEmpty(n) && n != current)
                 .Distinct()
                 .ToList();
-            if (previous.Count == 0)
-                return new List<FolderPair>();
-
             var user = new FolderPair { To = Trim(Settings.GetUserDataDirectory()), IsUserFolder = true };
             var data = new FolderPair { To = Trim(Settings.GetDataDirectory()) };
             // on Mono the user and data folders are the same
             bool sameFolder = string.Equals(user.To, data.To, StringComparison.OrdinalIgnoreCase);
+
+            // The current product's Documents folder takes precedence over older product names.
+            AddDocumentsSource(user, current);
 
             try
             {
@@ -119,6 +121,7 @@ namespace MissionPlanner.Utilities
                     var oldData = Trim(Settings.GetDataDirectory());
                     if (Directory.Exists(oldUser))
                         user.From.Add(oldUser);
+                    AddDocumentsSource(user, name);
                     if (!sameFolder && Directory.Exists(oldData))
                         data.From.Add(oldData);
                 }
@@ -130,6 +133,26 @@ namespace MissionPlanner.Utilities
 
             var pairs = sameFolder ? new List<FolderPair> { user } : new List<FolderPair> { user, data };
             return pairs.Where(p => p.From.Count > 0 && !File.Exists(Path.Combine(p.To, MarkerName))).ToList();
+        }
+
+        private static void AddDocumentsSource(FolderPair pair, string name)
+        {
+            // A custom data root is an explicit override; do not import unrelated default folders.
+            if (!string.IsNullOrEmpty(Settings.CustomUserDataDirectory))
+                return;
+            var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            if (string.IsNullOrEmpty(documents))
+                return;
+            var source = Trim(Path.Combine(documents, name));
+            if (Directory.Exists(source) && !string.Equals(source, pair.To, StringComparison.OrdinalIgnoreCase) &&
+                !pair.From.Contains(source))
+                pair.From.Add(source);
+        }
+
+        private static bool IsMigrationMarker(string path)
+        {
+            var name = Path.GetFileName(path);
+            return name == MarkerName || name == ".migration-complete";
         }
 
         private static void CopyAll(List<FolderPair> pairs)
@@ -148,7 +171,7 @@ namespace MissionPlanner.Utilities
                         foreach (var src in Directory.EnumerateFiles(from, "*", SearchOption.AllDirectories))
                         {
                             if (src.EndsWith(TempSuffix, StringComparison.OrdinalIgnoreCase) ||
-                                Path.GetFileName(src) == MarkerName)
+                                IsMigrationMarker(src))
                                 continue;
                             var dst = Path.Combine(pair.To, src.Substring(from.Length).TrimStart('\\', '/'));
                             // an earlier source already provides this file

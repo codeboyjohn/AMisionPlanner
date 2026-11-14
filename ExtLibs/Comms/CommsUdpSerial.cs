@@ -136,7 +136,7 @@ namespace MissionPlanner.Comms
 
             dest = OnSettings("UDP_port" + ConfigRef, dest);
 
-            if (inputboxreturn.Cancel == OnInputBoxShow("Listern Port",
+            if (inputboxreturn.Cancel == OnInputBoxShow("Listen Port",
                     "Enter Local port (ensure remote end is already sending)", ref dest)) return;
 
             var localAddress = Interface_IP;
@@ -146,7 +146,7 @@ namespace MissionPlanner.Comms
             // Load the previously persisted IP address.
             IPAddress local_ip = IPAddress.Parse(localAddress);
             
-            // Hosts without a picker (including LIB) retain the all-interfaces listener.
+            // The host supplies the NIC picker when a desktop UI is available.
             if (SelectNetworkInterface != null)
             {
                 if (!TrySelectLocalAddress(ref local_ip))
@@ -159,43 +159,44 @@ namespace MissionPlanner.Comms
             if (inputboxreturn.Cancel == OnInputBoxShow("Listen Multicast?",
                     "Enter Multicast to Subscribe too", ref multicast_source)) return;
 
-            Mult_Addr = multicast_source;
-            
-            OnSettings("Interface_IP" + ConfigRef, Interface_IP, true);
-            OnSettings("UDP_port" + ConfigRef, Port, true);
-            OnSettings("Mult_Addr" + ConfigRef, Mult_Addr, true);
-            //######################################
-
-            try
-            {
-                if (client != null) client.Close();
-            }
-            catch
-            {
-            }
-            // client = new UdpClient(int.Parse(Port));
-
-            client = new UdpClient(new IPEndPoint(IPAddress.Any, int.Parse(Port)));
-            IPAddress nicAddress = local_ip;
+            // Validate before closing the existing socket or saving any settings.
             IPAddress groupAddress = IPAddress.Parse(multicast_source);
-            if (multicast_source != "0.0.0.0")
+            bool multicast = !groupAddress.Equals(IPAddress.Any);
+            if (multicast && (groupAddress.AddressFamily != AddressFamily.InterNetwork ||
+                local_ip.AddressFamily != AddressFamily.InterNetwork ||
+                groupAddress.GetAddressBytes()[0] < 224 || groupAddress.GetAddressBytes()[0] > 239))
+                throw new ArgumentException("Select an IPv4 NIC and an IPv4 multicast group (224.0.0.0–239.255.255.255), or enter 0.0.0.0 for ordinary UDP.");
+
+            // Multicast receives on the wildcard endpoint; membership selects its interface.
+            // Ordinary UDP receives only on the selected local address.
+            var bindAddress = multicast || SelectNetworkInterface == null ? IPAddress.Any : local_ip;
+            var localEndPoint = new IPEndPoint(bindAddress, int.Parse(dest));
+            client?.Close();
+            client = new UdpClient(localEndPoint);
+            if (multicast)
             {
-                //                 client.JoinMulticastGroup(IPAddress.Parse(multicast_source), local_ip);
                 try
                 {
-                    client.JoinMulticastGroup(groupAddress, nicAddress);
+                    client.JoinMulticastGroup(groupAddress, local_ip);
                 }
                 catch (SocketException ex)
                 {
                     client.Close();
-
                     throw new InvalidOperationException(
                         $"Could not join multicast group {groupAddress} " +
-                        $"on local interface {localAddress}. " +
+                        $"on local interface {local_ip}. " +
                         $"Socket error: {ex.SocketErrorCode}. {ex.Message}",
                         ex);
                 }
             }
+
+            Port = dest;
+            Interface_IP = local_ip.ToString();
+            Mult_Addr = groupAddress.ToString();
+            OnSettings("Interface_IP" + ConfigRef, Interface_IP, true);
+            OnSettings("UDP_port" + ConfigRef, Port, true);
+            OnSettings("Mult_Addr" + ConfigRef, Mult_Addr, true);
+            log.InfoFormat("UDPSerial listening on {0}", localEndPoint);
 
             EndPointList.Clear();
             rbuffer.SetLength(0);
